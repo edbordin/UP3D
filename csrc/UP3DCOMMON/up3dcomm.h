@@ -9,8 +9,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-bool UP3DCOMM_Open();
-void UP3DCOMM_Close();
+bool UP3DCOMM_Open(void);
+void UP3DCOMM_Close(void);
 
 int  UP3DCOMM_Read( const uint8_t *data, const size_t maxdatalen );
 int  UP3DCOMM_ReadTO( const uint8_t *data, const size_t maxdatalen, const int timeout );

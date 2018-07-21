@@ -17,12 +17,12 @@
 
 static uint32_t _up3d_connected_fw_version;
 
-bool UP3D_Open()
+bool UP3D_Open(void)
 {
   return UP3DCOMM_Open();
 }
 
-void UP3D_Close()
+void UP3D_Close(void)
 {
   UP3DCOMM_Close();
 }
@@ -148,7 +148,7 @@ bool UP3D_WriteBlocks( const UP3D_BLK *data, uint8_t blocks )
   return true;
 }
 
-bool UP3D_WriteBlock( const UP3D_BLK *data ) 
+bool UP3D_WriteBlock( const UP3D_BLK *data )
 {
   return UP3D_WriteBlocks(data,1);
 }
@@ -240,7 +240,7 @@ bool UP3D_GetPrinterInfo(TT_tagPrinterInfoHeader *pihdr, TT_tagPrinterInfoName *
   uint8_t resp[2048];
   if( (UP3DCOMM_Write( UP3D_CMD_52, sizeof(UP3D_CMD_52) ) != sizeof(UP3D_CMD_52)) )
     return false;
-  
+
   if( (1 != UP3DCOMM_Read( resp, 1 )) || (7 != resp[0]) )
     return false;
 
@@ -481,7 +481,7 @@ bool UP3D_GetPrinterStatus(TT_tagPrinterStatus *status)
   if( UP3D_GetSystemVar( 0x0B, &sysvar) )  //PARA_REPORT_HEIGHT
     status->ReportHeight = htole16((int16_t)floor( (*((float*)&sysvar))*10.0 ) );
 
-  if( UP3D_GetSystemVar( 0x4D, &sysvar) && UP3D_GetSystemVar( 0x4C, &sysvar2) )  //PARA_REPORT_TIME_REMAIN PARA_REPORT_PERCENT 
+  if( UP3D_GetSystemVar( 0x4D, &sysvar) && UP3D_GetSystemVar( 0x4C, &sysvar2) )  //PARA_REPORT_TIME_REMAIN PARA_REPORT_PERCENT
     status->ReportTimeAndPercent = htole32(sysvar2 + (sysvar<<8));
 
   if( UP3D_GetSystemVar( 6, &sysvar) )     //NOZZLE1 TEMP

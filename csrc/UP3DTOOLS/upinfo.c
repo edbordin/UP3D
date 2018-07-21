@@ -14,7 +14,10 @@
 #include "up3d.h"
 #include "compat.h"
 
-#define upl_error(s) { printf("ERROR: %s\n",s); }
+// void upl_error(char const* const str)
+// {
+//   printf("ERROR: %s\n", str);
+// }
 
 int main(int argc, char const *argv[])
 {
@@ -23,7 +26,7 @@ int main(int argc, char const *argv[])
 
   if( !UP3D_IsPrinterResponsive() )
   {
-    upl_error( "UP printer is not responding\n" );
+    // upl_error( "UP printer is not responding\n" );
     UP3D_Close();
     return 3;
   }
@@ -35,7 +38,7 @@ int main(int argc, char const *argv[])
 
   if( !UP3D_GetPrinterInfo( &pihdr, &piname, &pidata, pisets ) )
   {
-    upl_error( "UP printer info error\n" );
+    // upl_error( "UP printer info error\n" );
     UP3D_Close();
     return 4;
   }
@@ -47,7 +50,7 @@ int main(int argc, char const *argv[])
   printf("Model:%s ", piname.printer_name);
   printf("U1:%.2f U3:%"PRIu32" U4:%"PRIu32" U7:%"PRIu32"",pihdr.flt_unk1,pihdr.u32_unk3,pihdr.u32_unk4,pihdr.u32_unk7 );
   printf("\n");
-  
+
   printf("Max-X:%f ", pidata.f_max_x);
   printf("Max-Y:%f ", pidata.f_max_y);
   printf("Max-Z:%f ", pidata.f_max_z);

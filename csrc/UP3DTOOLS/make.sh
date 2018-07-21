@@ -133,7 +133,7 @@ $STRIP up3dstatus
 
 
 
-elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+elif [[ "$OSTYPE" == "linux-gnu" ]] || [[ "$OSTYPE" == "linux-gnueabihf" ]]; then
 
 # note: LINUX: install libudev-dev libusb-1.0.0-dev + libncurses-dev and compile
 

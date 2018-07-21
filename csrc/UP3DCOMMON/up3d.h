@@ -10,10 +10,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-bool     UP3D_Open();
-void     UP3D_Close();
+bool     UP3D_Open(void);
+void     UP3D_Close(void);
 
-bool     UP3D_IsPrinterResponsive();
+bool     UP3D_IsPrinterResponsive(void);
 
 uint32_t UP3D_GetParameter(uint8_t param);
 bool     UP3D_SetParameter(uint8_t param, uint32_t value);
