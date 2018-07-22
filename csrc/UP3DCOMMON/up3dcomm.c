@@ -41,6 +41,11 @@ uint16_t getPID(void)
   return _pid;
 }
 
+bool UP3DCOMM_IsConnected(void)
+{
+  return (0U == _pid)? false : true;
+}
+
 #ifdef _DEBUG_IN_OUT_
 static void _print_buffer( const uint8_t* data, const size_t datalen )
 {
@@ -73,17 +78,6 @@ bool UP3DCOMM_Open()
       break;
     }
   }
-
-  // _libusb_dev_handle = libusb_open_device_with_vid_pid( _libusb_ctx, VID, PID_MINI_A );
-  // if( !_libusb_dev_handle )
-  //   _libusb_dev_handle = libusb_open_device_with_vid_pid( _libusb_ctx, VID, PID_MINI_M );
-
-  // if( !_libusb_dev_handle )
-  //   _libusb_dev_handle = libusb_open_device_with_vid_pid( _libusb_ctx, VID, PID_PLUS );
-
-  // if( !_libusb_dev_handle )
-  //   _libusb_dev_handle = libusb_open_device_with_vid_pid( _libusb_ctx, VID, PID_CETUS_S7 );
-
 
   if( !_libusb_dev_handle )
   {

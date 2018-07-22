@@ -78,7 +78,7 @@ static void update_state(bool redrawall)
     printw_b("Limit-:");
     printw(" (%08x)", UP3D_GetNegativeLimitState(m) );
     printw(" | ");
-    
+
     printw_b("Axis %s State:",UP3D_STR_AXIS_NAME[m-1]);
     int32_t astat = UP3D_GetAxisState(m);
     printw(" (%1d) %-12.12s", astat, UP3D_STR_AXIS_STATE[astat] );
@@ -126,7 +126,7 @@ static void update_state(bool redrawall)
   int32_t trm = tr / 60; tr -= trm*60;
   int32_t trs = tr;
   printw(" %2d:%02d:%02d", trh,trm,trs );
-  
+
   attron(A_UNDERLINE);mvhline(12,0,' ',cols);attroff(A_UNDERLINE);
 
   int h;
@@ -182,7 +182,7 @@ static void update_state(bool redrawall)
   move(20,0);
   printw_b("Have Support:");
   printw(" %-3s ", UP3D_GetSupportState()?"Yes":"No");
-  
+
   printw_b("Feed Error Length:");
   printw(" %4d ", UP3D_GetFeedErrorLength() );
 
@@ -231,17 +231,18 @@ static void update_state(bool redrawall)
 
   attron(A_UNDERLINE);mvhline(27,0,' ',cols);attroff(A_UNDERLINE);
 
-  int r=29; move(r++,0);  
+  int r=29; move(r++,0);
   int g;
-  for(g=0x3d;g<0x100;g++)
+  // for(g=0x3d;g<0x100;g++)
+  for(g=0;g<0x100;g++)
   {
-    if( 0==g%12 ) 
-      move(r++,0);  
+    if( 0==g%12 )
+      move(r++,0);
     printw_b("%02X:",g);printw("%08x ", UP3D_GetParameter(g));
   }
 
 /*
-  move(r++,0);  
+  move(r++,0);
   for(g=0x50;g<0x54;g++)
   {
     uint32_t f = UP3D_GetParameter(g);
@@ -249,14 +250,14 @@ static void update_state(bool redrawall)
   }
 */
 
-  move(r++,0);  
+  move(r++,0);
   for(g=0x84;g<0x8A;g++)
   {
     uint32_t f = UP3D_GetParameter(g);
     printw_b("%02X:",g);printw("%f ", *((float*)&f) );
   }
 
-  move(r++,0);  
+  move(r++,0);
   for(g=0x97;g<0x9F;g++)
   {
     uint32_t f = UP3D_GetParameter(g);
@@ -265,7 +266,7 @@ static void update_state(bool redrawall)
 
   //move(29,0);for(g=0x3d;g<0x45;g++){ printw_b("$%02X:",g);printw(" %08x ", UP3D_GetParameter(g));}
   //move(30,0);for(g=0x45;g<0x4c;g++){ printw_b("$%02X:",g);printw(" %08x ", UP3D_GetParameter(g));}
-  
+
   refresh();
 }
 
@@ -292,19 +293,19 @@ int main(int argc, char *argv[])
   TT_tagPrinterInfoName   piname;
   TT_tagPrinterInfoData   pidata;
   TT_tagPrinterInfoSet    pisets[8];
-    
+
   if( !UP3D_GetPrinterInfo( &pihdr, &piname, &pidata, pisets ) )
   {
     upl_error( "UP printer info error\n" );
     UP3D_Close();
     return -1;
   }
-  
+
   steps[0] = pidata.f_steps_mm_x;
   steps[1] = pidata.f_steps_mm_y;
   steps[2] = pidata.f_steps_mm_z;
   steps[3] = pidata.f_steps_mm_x == 160.0 ? 236.0 : 854.0; // fix display for Cetus3D
-  
+
   UP3D_SetParameter(0x94,999); //set best accuracy for reporting position
 
 
@@ -321,7 +322,7 @@ int main(int argc, char *argv[])
   noecho();                    // getch no echo
   nodelay(stdscr, TRUE);       // getch nonblocking
   curs_set(0);                 // no visible cursor
-  
+
   if( has_colors() )
   {
     start_color();

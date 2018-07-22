@@ -53,10 +53,10 @@ int main(int argc, char *argv[])
 {
   if (argc > 2)
     print_usage_and_exit(argv[0]);
-  
+
   if( !UP3D_Open() )
     return -1;
-  
+
   if (argc == 2)
   {
     if ( !strcmp(argv[1], "stop") )
@@ -83,13 +83,25 @@ int main(int argc, char *argv[])
       UP3D_PROG_BLK_Stop(&blk);UP3D_WriteBlock(&blk);
       UP3D_StartResumeProgram();
     }
+    else if ( !strcmp(argv[1], "beep") )
+    {
+      UP3D_BLK blk;
+      // UP3D_PROG_BLK_Power(&blk,false);UP3D_WriteBlock(&blk);
+      // UP3D_PROG_BLK_Stop(&blk);UP3D_WriteBlock(&blk);
+      // UP3D_StartResumeProgram();
+      UP3D_ClearProgramBuf();
+      UP3D_PROG_BLK_Beeper(&blk,true);UP3D_WriteBlock(&blk);
+      usleep(500000);
+      UP3D_PROG_BLK_Beeper(&blk,false);UP3D_WriteBlock(&blk);
+      UP3D_StartResumeProgram();
+    }
     else
     {
       UP3D_Close();
       print_usage_and_exit(argv[0]);
     }
   }
-  
+
   int32_t mstat = UP3D_GetMachineState();
   int32_t pstat = UP3D_GetProgramState();
   int32_t sstat = UP3D_GetSystemState();
@@ -99,7 +111,7 @@ int main(int argc, char *argv[])
   int32_t percent = UP3D_GetPercent();
   int32_t tr = UP3D_GetTimeRemaining();
 
-  
+
   printf("%s;%s;%s;%0.2f;%d;%0.2f;%d;%d\n",
          UP3D_STR_MACHINE_STATE[mstat],
          UP3D_STR_PROGRAM_STATE[pstat],
@@ -109,7 +121,7 @@ int main(int argc, char *argv[])
          height,
          percent,
          tr );
-  
+
   UP3D_Close();
   return 0;
 }
