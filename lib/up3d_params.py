@@ -120,6 +120,7 @@ class PARA():
     #0xBC light countdown timer
 
     #0xC9, used as counter
+    #  UP3D_SetParameter(0x94,999); //set best accuracy for reporting position
 
 def getTemp():
     temp = up.getParam(PARA.GET_NOZZLE1_TEMP)
@@ -139,3 +140,6 @@ def getHeight():
 
 def getTimeRemaining():
     return up.getParam(PARA.PARA_REPORT_TIME_REMAIN)
+
+def setBestAccuracy():
+    up.setParam(0x94,999); #set best accuracy for reporting position

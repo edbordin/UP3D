@@ -12,7 +12,7 @@
 
 #include <libusb-1.0/libusb.h>
 
-//#define _DEBUG_IN_OUT_
+#define _DEBUG_IN_OUT_
 
 #define VID (0x4745)
 #define PID_MINI_A (0x0001)
@@ -47,7 +47,7 @@ bool UP3DCOMM_IsConnected(void)
 }
 
 #ifdef _DEBUG_IN_OUT_
-static void _print_buffer( const uint8_t* data, const size_t datalen )
+void _print_buffer( const uint8_t* data, const size_t datalen )
 {
   unsigned int pos;
   for( pos=0; pos<datalen; pos++ )

@@ -26,11 +26,20 @@
 
 #include "compat.h"
 #include "up3d.h"
+#include <time.h>
+#include "up3dconf.h"
+#include "printLink.h"
 
+#ifdef _WINDOWS
+#include <windows.h>
+#else
+#include <unistd.h>
+#define Sleep(x) usleep((x)*1000)
+#endif
 
 void print_usage_and_exit(char *name)
 {
-  printf("Usage: %s [stop | on | off]\n\n", name);
+  printf("Usage: %s [stop | on | off| pause]\n\n", name);
   printf("          stop:  stops current print and reports status\n");
   printf("          on:    switch printer on and reports status\n");
   printf("          off:   switch printer off and reports status\n");
@@ -44,11 +53,52 @@ void print_usage_and_exit(char *name)
   printf("          <height>:  reported printing height in mm\n");
   printf("          <percent>: reported completion in percent\n");
   printf("          <time>:    reported time remaining in seconds\n");
+  printf("          <pause>:   pause current job\n");
   printf("\n");
   exit(0);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////
 
+bool UpPauseProgram()
+{
+  bool isIdle;
+  IsSystemIdle(&isIdle);
+  if (!PauseProgram())
+  {
+      printf("PauseProgram: fail\n");
+      return false;
+  }
+  if (!UpWaitUntilIdle(500))
+  {
+      printf("UpWaitUntilIdle: fail\n");
+      return false;
+  }
+  SetPrinterStatus(3);
+  if (!StopAllMove())
+  {
+      printf("StopAllMove: fail\n");
+      return false;
+  }
+  Sleep(1000);
+  if (!MotorJog(Z_axis, 40.0, 10.0))
+  // if(!MotorJogTo(2, 15.0, -22.0))
+  {
+      printf("MotorJog: fail\n");
+      return false;
+  }
+  if (!UpWaitUntilIdle(500))
+  {
+      printf("UpWaitUntilIdle 2: fail\n");
+      return false;
+  }
+  printf("Pause done\n");
+  return true;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
   if (argc > 2)
@@ -56,6 +106,11 @@ int main(int argc, char *argv[])
 
   if( !UP3D_Open() )
     return -1;
+
+  if (UP3D_IsPrinterResponsive())
+  {
+
+  }
 
   if (argc == 2)
   {
@@ -86,14 +141,46 @@ int main(int argc, char *argv[])
     else if ( !strcmp(argv[1], "beep") )
     {
       UP3D_BLK blk;
-      // UP3D_PROG_BLK_Power(&blk,false);UP3D_WriteBlock(&blk);
-      // UP3D_PROG_BLK_Stop(&blk);UP3D_WriteBlock(&blk);
-      // UP3D_StartResumeProgram();
       UP3D_ClearProgramBuf();
       UP3D_PROG_BLK_Beeper(&blk,true);UP3D_WriteBlock(&blk);
-      usleep(500000);
+      usleep(1000000);
       UP3D_PROG_BLK_Beeper(&blk,false);UP3D_WriteBlock(&blk);
       UP3D_StartResumeProgram();
+    }
+    else if ( !strcmp(argv[1], "home") )
+    {
+      UP3D_BLK blk;
+      UP3D_ClearProgramBuf();
+
+      UP3D_PROG_BLK_Home( &blk, UP3DAXIS_Z, settings.z_dir, settings.z_hofs_hi, settings.z_hspeed_hi );
+      UP3D_WriteBlock(&blk);
+      UP3D_PROG_BLK_Home( &blk, UP3DAXIS_Z, settings.z_dir, settings.z_hofs_lo, settings.z_hspeed_lo );
+      UP3D_WriteBlock(&blk);
+
+      UP3D_StartResumeProgram();
+    }
+    else if ( !strcmp(argv[1], "move") )
+    {
+      //UP3D_ClearProgramBuf();
+      MotorJog(2, 40.0, 10.0);
+      // MotorJogTo(2, 15.0, -22.0);
+
+      //UP3D_StartResumeProgram();
+    }
+    else if ( !strcmp(argv[1], "pause") )
+    {
+      // PauseProgram();
+      // MotorJogTo(2, 15.0, -22.0);
+      UpPauseProgram();
+    }
+    else if ( !strcmp(argv[1], "resume") )
+    {
+      StartResumeProgram();
+    }
+    else if ( !strcmp(argv[1], "extrude") )
+    {
+      // MotorJog(E_axis, 1200.0, 40.0);
+      UpExtrudeMaterial(true);
     }
     else
     {
@@ -122,6 +209,7 @@ int main(int argc, char *argv[])
          percent,
          tr );
 
+  printf("sizeof float %u", sizeof(float));
   UP3D_Close();
   return 0;
 }

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 if [ -z "$CC" ]; then
     CC=gcc
 fi
@@ -133,7 +134,7 @@ $STRIP up3dstatus
 
 
 
-elif [[ "$OSTYPE" == "linux-gnu" ]] || [[ "$OSTYPE" == "linux-gnueabihf" ]]; then
+elif [[ "$OSTYPE" == "linux-gnueabihf" ]]; then
 
 # note: LINUX: install libudev-dev libusb-1.0.0-dev + libncurses-dev and compile
 
@@ -180,7 +181,7 @@ $STRIP up3dgcode
 $CC -Os -std=c99 \
     -D_BSD_SOURCE \
     -I../UP3DCOMMON/ \
-    -o up3dstatus ../UP3DCOMMON/up3dcomm.c ../UP3DCOMMON/up3d.c ../UP3DCOMMON/up3ddata.c upstatus.c \
+    -o up3dstatus ../UP3DCOMMON/up3dcomm.c ../UP3DCOMMON/up3d.c ../UP3DCOMMON/up3ddata.c ../UP3DCOMMON/up3dconf.c upstatus.c \
     -lusb-1.0 -lpthread -lm
 
 $STRIP up3dstatus

@@ -1,0 +1,61 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    //"command": "rsync -az '${file}' server.example.org:~ && ssh server.example.org 'chmod +x ./${fileBasename}; ./${fileBasename}'",
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "stmake",
+            "windows": {
+                "options": {
+                    "env": {
+                        "PATH": "c:/Program Files/Git/usr/bin;C:\\Program Files (x86)\\Intel\\iCLS Client\\;C:\\Program Files\\Docker\\Docker\\Resources\\bin;C:\\Program Files\\Intel\\iCLS Client\\;C:\\Programs\\pik\\;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v8.0\\bin;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v8.0\\libnvvp;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\ProgramData\\chocolatey\\bin;C:\\Program Files\\Git\\cmd;C:\\Programs\\WinMerge;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\Calibre2\\;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files\\TortoiseGit\\bin;C:\\Program Files\\Intel\\WiFi\\bin\\;C:\\Program Files\\Common Files\\Intel\\WirelessCommon\\;C:\\Users\\viacheslav.maslov\\.cargo\\bin;C:\\Programs\\ruby\\Ruby21\\bin;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Programs\\Python\\Python36\\Scripts\\;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Programs\\Python\\Python36\\;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Microsoft\\WindowsApps;C:\\cuda\\bin;C:\\cuda\\lib\\x64;C:\\Users\\viacheslav.maslov\\bin;C:\\work\\tools\\windriver\\diab5.9.4.8\\WIN32\\bin;C:\\work\\tools\\windriver\\diab5.9.4.8\\WIN32\\lib;c:\\Programs\\ruby\\ruby-dev-kit\\bin;c:\\Programs\\ruby\\ruby-dev-kit\\;C:\\Programs\\cygwin\\cygwin\\bin;C:\\Programs\\Vim\\vim80;C:\\Programs\\Putty;C:\\Programs\\teraterm;c:\\Program Files (x86)\\Graphviz2.38\\bin;C:\\Programs\\SysGCC\\raspberry\\bin;c:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\;c:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\include\\;c:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\lib\\;c:\\work\\audi\\artifacts\\X314#697\\Audi-GW-3.1-Eng-D314\\Android\\Android-Platform-Tools\\platform-tools\\;C:\\tmp_Java\\jre6_64\\bin;C:\\tmp_Java\\jre6_64;C:\\Program Files\\Microsoft VS Code\\bin;c:\\work\\tools\\TRACE32_R_2017_09_000092037\\files\\bin\\windows64\\;C:\\Users\\viacheslav.maslov\\bin;C:\\Program Files\\LLVM\\bin;C:\\Program Files\\Intel\\WiFi\\bin\\;C:\\Program Files\\Common Files\\Intel\\WirelessCommon\\;c:\\users\\viacheslav.maslov\\appdata\\local\\programs\\python\\python36\\Scripts;;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+                    }
+                }
+            },
+            "command": "ssh maslovw@192.168.178.42 'cd /home/maslovw/work/cetus/temp/up_control/UP3D/csrc/UP3DTOOLS; ./st_make.sh'",
+            "type": "shell",
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "pause",
+            "windows": {
+                "options": {
+                    "env": {
+                        "PATH": "c:/Program Files/Git/usr/bin;C:\\Program Files (x86)\\Intel\\iCLS Client\\;C:\\Program Files\\Docker\\Docker\\Resources\\bin;C:\\Program Files\\Intel\\iCLS Client\\;C:\\Programs\\pik\\;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v8.0\\bin;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v8.0\\libnvvp;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\ProgramData\\chocolatey\\bin;C:\\Program Files\\Git\\cmd;C:\\Programs\\WinMerge;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\Calibre2\\;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files\\TortoiseGit\\bin;C:\\Program Files\\Intel\\WiFi\\bin\\;C:\\Program Files\\Common Files\\Intel\\WirelessCommon\\;C:\\Users\\viacheslav.maslov\\.cargo\\bin;C:\\Programs\\ruby\\Ruby21\\bin;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Programs\\Python\\Python36\\Scripts\\;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Programs\\Python\\Python36\\;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Microsoft\\WindowsApps;C:\\cuda\\bin;C:\\cuda\\lib\\x64;C:\\Users\\viacheslav.maslov\\bin;C:\\work\\tools\\windriver\\diab5.9.4.8\\WIN32\\bin;C:\\work\\tools\\windriver\\diab5.9.4.8\\WIN32\\lib;c:\\Programs\\ruby\\ruby-dev-kit\\bin;c:\\Programs\\ruby\\ruby-dev-kit\\;C:\\Programs\\cygwin\\cygwin\\bin;C:\\Programs\\Vim\\vim80;C:\\Programs\\Putty;C:\\Programs\\teraterm;c:\\Program Files (x86)\\Graphviz2.38\\bin;C:\\Programs\\SysGCC\\raspberry\\bin;c:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\;c:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\include\\;c:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\lib\\;c:\\work\\audi\\artifacts\\X314#697\\Audi-GW-3.1-Eng-D314\\Android\\Android-Platform-Tools\\platform-tools\\;C:\\tmp_Java\\jre6_64\\bin;C:\\tmp_Java\\jre6_64;C:\\Program Files\\Microsoft VS Code\\bin;c:\\work\\tools\\TRACE32_R_2017_09_000092037\\files\\bin\\windows64\\;C:\\Users\\viacheslav.maslov\\bin;C:\\Program Files\\LLVM\\bin;C:\\Program Files\\Intel\\WiFi\\bin\\;C:\\Program Files\\Common Files\\Intel\\WirelessCommon\\;c:\\users\\viacheslav.maslov\\appdata\\local\\programs\\python\\python36\\Scripts;;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+                    }
+                }
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "command": "ssh maslovw@192.168.178.42 'cd /home/maslovw/work/cetus/temp/up_control/UP3D/csrc/UP3DTOOLS; ./up3dstatus pause'",
+            "type": "shell"
+        },
+        {
+            "label": "print",
+            "windows": {
+                "options": {
+                    "env": {
+                        "PATH": "c:/Program Files/Git/usr/bin;C:\\Program Files (x86)\\Intel\\iCLS Client\\;C:\\Program Files\\Docker\\Docker\\Resources\\bin;C:\\Program Files\\Intel\\iCLS Client\\;C:\\Programs\\pik\\;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v8.0\\bin;C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v8.0\\libnvvp;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\ProgramData\\chocolatey\\bin;C:\\Program Files\\Git\\cmd;C:\\Programs\\WinMerge;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\Calibre2\\;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files\\TortoiseGit\\bin;C:\\Program Files\\Intel\\WiFi\\bin\\;C:\\Program Files\\Common Files\\Intel\\WirelessCommon\\;C:\\Users\\viacheslav.maslov\\.cargo\\bin;C:\\Programs\\ruby\\Ruby21\\bin;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Programs\\Python\\Python36\\Scripts\\;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Programs\\Python\\Python36\\;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Microsoft\\WindowsApps;C:\\cuda\\bin;C:\\cuda\\lib\\x64;C:\\Users\\viacheslav.maslov\\bin;C:\\work\\tools\\windriver\\diab5.9.4.8\\WIN32\\bin;C:\\work\\tools\\windriver\\diab5.9.4.8\\WIN32\\lib;c:\\Programs\\ruby\\ruby-dev-kit\\bin;c:\\Programs\\ruby\\ruby-dev-kit\\;C:\\Programs\\cygwin\\cygwin\\bin;C:\\Programs\\Vim\\vim80;C:\\Programs\\Putty;C:\\Programs\\teraterm;c:\\Program Files (x86)\\Graphviz2.38\\bin;C:\\Programs\\SysGCC\\raspberry\\bin;c:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\;c:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\include\\;c:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\lib\\;c:\\work\\audi\\artifacts\\X314#697\\Audi-GW-3.1-Eng-D314\\Android\\Android-Platform-Tools\\platform-tools\\;C:\\tmp_Java\\jre6_64\\bin;C:\\tmp_Java\\jre6_64;C:\\Program Files\\Microsoft VS Code\\bin;c:\\work\\tools\\TRACE32_R_2017_09_000092037\\files\\bin\\windows64\\;C:\\Users\\viacheslav.maslov\\bin;C:\\Program Files\\LLVM\\bin;C:\\Program Files\\Intel\\WiFi\\bin\\;C:\\Program Files\\Common Files\\Intel\\WirelessCommon\\;c:\\users\\viacheslav.maslov\\appdata\\local\\programs\\python\\python36\\Scripts;;C:\\Users\\viacheslav.maslov\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+                    }
+                }
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "command": "ssh maslovw@192.168.178.42 'cd /home/maslovw/work/cetus/temp/up_control/UP3D/csrc/UP3DTOOLS; ./up3dstatus'",
+            "type": "shell"
+        }
+    ]
+}

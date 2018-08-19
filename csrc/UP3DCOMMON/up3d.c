@@ -37,7 +37,7 @@ bool UP3D_IsPrinterResponsive()
     return false;
 
   _up3d_connected_fw_version = le32toh(*((uint32_t*)resp));
-
+  printf("FW version %u\n", _up3d_connected_fw_version);
   return true;
 }
 
