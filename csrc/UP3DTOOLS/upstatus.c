@@ -74,7 +74,7 @@ bool UpPauseProgram()
       printf("UpWaitUntilIdle: fail\n");
       return false;
   }
-  SetPrinterStatus(3);
+  SetPrinterStatus(SS_PAUSED);
   if (!StopAllMove())
   {
       printf("StopAllMove: fail\n");
@@ -181,6 +181,11 @@ int main(int argc, char *argv[])
     {
       // MotorJog(E_axis, 1200.0, 40.0);
       UpExtrudeMaterial(true);
+    }
+    else if ( !strcmp(argv[1], "init") )
+    {
+      // MotorJog(E_axis, 1200.0, 40.0);
+      InitialPrinter();
     }
     else
     {

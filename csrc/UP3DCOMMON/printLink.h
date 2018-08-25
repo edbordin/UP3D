@@ -93,3 +93,4 @@ bool SetPrinterStatus(SYSTEM_STATE status);
 bool GetPrinterStatus(SYSTEM_STATE* status);
 bool UpWaitUntilIdle(uint32_t timeout);
 bool LoadRunRomProg(char prog);
+bool InitialPrinter(void);

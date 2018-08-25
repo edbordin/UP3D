@@ -4,6 +4,7 @@
 #include "up3d.h"
 #include "compat.h"
 #include <time.h>
+#include "printLink.h"
 
 
 #define upl_error(s) { printf("ERROR: %s\n",s); }
@@ -39,6 +40,39 @@ static PyObject* up3d_close(PyObject *self, PyObject *args)
     logDebug("up3d_close\n");
     UP3D_Close();
     return PyBool_FromLong(1L);
+}
+
+static PyObject* up3d_init(PyObject *self, PyObject *args)
+{
+    logDebug("up3d_init\n");
+    long ret = InitialPrinter();
+    logDebug("up3d_init: %u", ret);
+    return PyBool_FromLong(1L);
+}
+
+static PyObject* up3d_isIdle(PyObject *self, PyObject *args)
+{
+    logDebug("up3d_isIdle\n");
+    bool isIdle;
+    if (!IsSystemIdle(&isIdle))
+    {
+        logDebug("up3d_isIdle fail\n");
+        return NULL;
+    }
+
+    return PyBool_FromLong(isIdle);
+}
+
+static PyObject* up3d_jog(PyObject *self, PyObject *args)
+{
+    logDebug("up3d_jog\n");
+    return PyBool_FromLong(0);
+}
+
+static PyObject* up3d_jogTo(PyObject *self, PyObject *args)
+{
+    logDebug("up3d_jogTo\n");
+    return PyBool_FromLong(0);
 }
 
 static PyObject* up3d_powerOn(PyObject *self, PyObject *args)
@@ -105,6 +139,8 @@ static PyObject* up3d_beep(PyObject *self, PyObject *args)
 
     return PyBool_FromLong(1);
 }
+
+
 // Method definition object for this extension, these argumens mean:
 // ml_name: The name of the method
 // ml_meth: Function pointer to the method implementation
@@ -137,6 +173,22 @@ static PyMethodDef up_methods[] = {
         "beep", up3d_beep, METH_NOARGS,
         "beep for 0.5sec"
     },
+    {
+        "init", up3d_init, METH_NOARGS,
+        "initialize printer"
+    },
+    {
+        "isIdle", up3d_isIdle, METH_NOARGS,
+        "return true if printer is idle"
+    },
+    {
+        "jogTo", up3d_jog, METH_VARARGS,
+        "jogTo(axis, coord, speed). Move one of the axis to the coordinate"
+    },
+    {
+        "jog", up3d_jog, METH_VARARGS,
+        "jog(axis, offset, speed). Move one of the axis to the offset of current pos"
+    },
     {NULL, NULL, 0, NULL}
 };
 
@@ -145,7 +197,7 @@ static PyMethodDef up_methods[] = {
 // what it's methods are and where to look for it's method definitions
 static struct PyModuleDef pyUP3D_definition = {
     PyModuleDef_HEAD_INIT,
-    "pyUP3D",
+    "pyUP3D_com",
     "A Python module to control your TierTime printer",
     -1,
     up_methods
@@ -155,7 +207,7 @@ static struct PyModuleDef pyUP3D_definition = {
 // Python calls this function when importing your extension. It is important
 // that this function is named PyInit_[[your_module_name]] exactly, and matches
 // the name keyword argument in setup.py's setup() call.
-PyMODINIT_FUNC PyInit_pyUP3D(void) {
+PyMODINIT_FUNC PyInit_pyUP3D_com(void) {
     Py_Initialize();
     printf("v1.7");
 

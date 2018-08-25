@@ -12,7 +12,7 @@
 
 #include <libusb-1.0/libusb.h>
 
-#define _DEBUG_IN_OUT_
+// #define _DEBUG_IN_OUT_
 
 #define VID (0x4745)
 #define PID_MINI_A (0x0001)

@@ -16,25 +16,35 @@
 #define PWARN printf
 #define PERR printf
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 
 bool GetPrinterResponse(uint8_t *apCmd, uint8_t *apRespBuff, int aCmdLen, int *apRespBuffLen)
 {
   uint8_t resp[2048];
+  int respBuffLen = 0;
   volatile int written = UP3DCOMM_Write( apCmd, aCmdLen);
   PDEBUG("GetPrinterResponse:write(%X): write %x; %X\n", *apCmd, aCmdLen, written);
+  if (apRespBuffLen)
+  {
+    respBuffLen = *apRespBuffLen;
+  }
 
   if (aCmdLen == written)
   {
     int read = sizeof(resp);
     read = UP3DCOMM_Read(resp, read);
-    *apRespBuffLen = read;
-    if (apRespBuff)
+    if (apRespBuffLen)
     {
-      memmove(apRespBuff, &resp, read);
+      *apRespBuffLen = read;
     }
     if (0 == read)
     {
       PERR("GetPrinteResponse(%X): read fail\n", *apCmd);
+    }
+    else if (apRespBuff)
+    {
+      memmove(apRespBuff, &resp, MIN(respBuffLen, read));
     }
     return (read >= 1);
   }
@@ -98,8 +108,8 @@ bool MotorJog(uint8_t motor, float offset, float speed)
   *p1 = speed;
   *p2 = offset;
 
-  printf("motorJog %u %f %f, %f %f\n", motor, offset, speed, *p1, *p2);
-  _print_buffer(CMD_JOG, 10);
+  // printf("motorJog %u %f %f, %f %f\n", motor, offset, speed, *p1, *p2);
+  // _print_buffer(CMD_JOG, 10);
   return GetPrinterResponse(CMD_JOG, 0L, sizeof(CMD_JOG), &read);
 }
 
@@ -296,6 +306,12 @@ bool ExtrudeMaterial(int extruder, int temperature)
     SetSystemVar(0x39, temperature);
   }
   return LoadRunRomProg(program);
+}
+
+bool InitialPrinter(void)
+{
+  SetSystemVar(16, 0);
+  return LoadRunRomProg(0);
 }
 
 bool UpExtrudeMaterial(bool WithdrawMaterial)
