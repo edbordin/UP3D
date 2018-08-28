@@ -6,7 +6,8 @@ from pyup3d.cnc.coordinates import Coordinates
 g_pattern = re.compile('([A-Z])([-+]?[0-9.]+)')
 # white spaces and comments start with ';' and in '()'
 # clean_pattern = re.compile('\s+|\(.*?\)|;.*')
-clean_pattern = re.compile('\s+|\(.*?\)|;.*|\*.*|^N\d*')
+# clean_pattern = re.compile('\s+|\(.*?\)|;.*|\*.*|^N\d*')
+clean_pattern = re.compile('\(.*?\)|;.*|\*.*|^N\d*')
 
 
 class GCodeException(Exception):
@@ -14,6 +15,7 @@ class GCodeException(Exception):
     """
     pass
 
+DEFAULT_NONE_COORDS = Coordinates(None, None, None, None)
 
 class GCode(object):
     """ This object represent single line of gcode.
@@ -40,11 +42,9 @@ class GCode(object):
         :param multiply: if value exist, multiply it by this value.
         :return: Value if exists or default otherwise.
         """
-        if arg_name not in self.params:
-            return default
-        return float(self.params[arg_name]) * multiply
+        return float(self.params.get(arg_name, default)) * multiply
 
-    def coordinates(self, default, multiply):
+    def coordinates(self, default = DEFAULT_NONE_COORDS, multiply = 1):
         """ Get X, Y and Z values as Coord object.
         :param default: Default values, if any of coordinates is not specified.
         :param multiply: If value exist, multiply it by this value.
@@ -55,6 +55,12 @@ class GCode(object):
         z = self.get('Z', default.z, multiply)
         e = self.get('E', default.e, multiply)
         return Coordinates(x, y, z, e)
+
+    def __str__(self):
+        return ", ".join(["{}:{}".format(k,v) for k,v in self.params.items()])
+
+    def __repr__(self):
+        return str(self)
 
     def has_coordinates(self):
         """ Check if at least one of the coordinates is present.
@@ -90,21 +96,34 @@ class GCode(object):
         :param line: String with gcode line.
         :return: gcode objects.
         """
-        line = line.upper()
+        # line = line.upper().strip()
+        line = line.strip()
         line = re.sub(clean_pattern, '', line)
+        print("clean line: " + line)
         if len(line) == 0:
             return None
         if line[0] == '%':
             return None
         m = g_pattern.findall(line)
+        additional = re.sub(g_pattern, '', line)
+        print("found: ")
+        print(m)
+        print("addit:" + additional)
         if not m:
             raise GCodeException('gcode not found: {}'.format(line))
-        if len(''.join(["%s%s" % i for i in m])) != len(line):
-            raise GCodeException('extra characters in line')
+        # if len(''.join(["%s%s" % i for i in m])) != len(line):
+        #     raise GCodeException('extra characters in line {}'.format(m))
         # noinspection PyTypeChecker
         params = dict(m)
-        if len(params) != len(m):
-            raise GCodeException('duplicated gcode entries: {}'.format(line))
+        params['extra'] = additional
+        # if len(params) != len(m):
+        #     raise GCodeException('duplicated gcode entries: {}'.format(line))
         if 'G' in params and 'M' in params:
             raise GCodeException('g and m command found: {}'.format(line))
         return GCode(params)
+
+if __name__ == "__main__":
+    line = "M28 /b.g"
+    # line = "M28"
+    gcode = GCode.parse_line(line)
+    print(gcode)

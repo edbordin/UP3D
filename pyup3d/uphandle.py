@@ -30,9 +30,6 @@ class UP():
     def init(self):
         return upcom.init()
 
-    def getTemp(self):
-        temp = upcom.getParam(PARA.GET_NOZZLE1_TEMP)
-        return fh.float_from_hex(temp)
 
     def getPercentage(self):
         return upcom.getParam(PARA.PARA_REPORT_PERCENT)

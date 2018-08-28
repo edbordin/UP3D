@@ -15,7 +15,12 @@
 
 #include "compat.h"
 
-static uint32_t _up3d_connected_fw_version;
+static uint32_t _up3d_connected_fw_version = 0;
+
+uint32_t get_fw_version(void)
+{
+  return _up3d_connected_fw_version;
+}
 
 bool UP3D_Open(void)
 {

@@ -1,5 +1,10 @@
 {
     "C_Cpp.default.includePath":  ["c:/Users/viacheslav.maslov/AppData/Local/Programs/Python/Python36/include",
                                     "csrc/UP3DCOMMON",
-                                " C:/Users/viacheslav.maslov/AppData/Local/lxss/rootfs/usr/include"]
+                                " C:/Users/viacheslav.maslov/AppData/Local/lxss/rootfs/usr/include" ],
+
+    "python.unitTest.pyTestEnabled": false,
+    "python.unitTest.nosetestsEnabled": false,
+    "python.unitTest.unittestEnabled": false,
+    "python.unitTest.promptToConfigure": false
 }

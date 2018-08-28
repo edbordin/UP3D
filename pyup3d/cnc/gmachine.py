@@ -1,9 +1,8 @@
-from __future__ import division
-
 import pyup3d.cnc.logging_config as logging_config
 from pyup3d.cnc.coordinates import *
 from pyup3d.cnc.enums import *
 from pyup3d.cnc.config import *
+from pyup3d.cnc.hal import Hal
 import time
 
 import logging
@@ -37,8 +36,9 @@ class GMachine(object):
         self._fan_state = False
         self._heaters = dict()
         self.reset()
-        self.hal = hal
+        self.hal = Hal()
         self.hal.init()
+        self._feedrate = MIN_VELOCITY_MM_PER_MIN
 
     def release(self):
         """ Free all resources.
@@ -61,6 +61,7 @@ class GMachine(object):
         self._convertCoordinates = 1.0
         self._absoluteCoordinates = True
         self._plane = PLANE_XY
+        self._feedrate = MIN_VELOCITY_MM_PER_MIN
 
     # noinspection PyMethodMayBeStatic
     def _spindle(self, spindle_speed):
@@ -83,7 +84,7 @@ class GMachine(object):
             raise GMachineException("unknown heater")
         try:
             measure()
-        except (IOError, OSError):
+        except (self.hal.HalException):
             raise GMachineException("can not measure temperature")
         if heater in self._heaters:
             self._heaters[heater].stop()
@@ -266,7 +267,8 @@ class GMachine(object):
             This function for tests only.
             :return current position.
         """
-        self.hal.join()
+        # self.hal.join()
+        self._position = self.hal.get_position()
         return self._position
 
     def plane(self):
@@ -307,59 +309,29 @@ class GMachine(object):
         if gcode is None:
             return None
         answer = None
-        logger.debug("got command " + str(gcode.params))
         # read command
         c = gcode.command()
         if c is None and gcode.has_coordinates():
             c = 'G1'
+
+        if c != "M105":
+            logger.debug("got command " + str(gcode.params))
         # read parameters
-        if self._absoluteCoordinates:
-            coord = gcode.coordinates(self._position - self._local,
-                                      self._convertCoordinates)
-            coord = coord + self._local
-            delta = coord - self._position
-        else:
-            delta = gcode.coordinates(Coordinates(0.0, 0.0, 0.0, 0.0),
-                                      self._convertCoordinates)
-            # coord = self._position + delta
-        velocity = gcode.get('F', self._velocity)
-        radius = gcode.radius(Coordinates(0.0, 0.0, 0.0, 0.0),
-                              self._convertCoordinates)
+        self._velocity = gcode.get('F', self._velocity)
         # check parameters
-        if velocity < MIN_VELOCITY_MM_PER_MIN:
+        if self._velocity < MIN_VELOCITY_MM_PER_MIN:
             raise GMachineException("feed speed too low")
         # select command and run it
-        if c == 'G0':  # rapid move
-            vl = max(MAX_VELOCITY_MM_PER_MIN_X,
-                     MAX_VELOCITY_MM_PER_MIN_Y,
-                     MAX_VELOCITY_MM_PER_MIN_Z,
-                     MAX_VELOCITY_MM_PER_MIN_E)
-            l = delta.length()
-            if l > 0:
-                proportion = abs(delta) / l
-                if proportion.x > 0:
-                    v = int(MAX_VELOCITY_MM_PER_MIN_X / proportion.x)
-                    if v < vl:
-                        vl = v
-                if proportion.y > 0:
-                    v = int(MAX_VELOCITY_MM_PER_MIN_Y / proportion.y)
-                    if v < vl:
-                        vl = v
-                if proportion.z > 0:
-                    v = int(MAX_VELOCITY_MM_PER_MIN_Z / proportion.z)
-                    if v < vl:
-                        vl = v
-                if proportion.e > 0:
-                    v = int(MAX_VELOCITY_MM_PER_MIN_E / proportion.e)
-                    if v < vl:
-                        vl = v
-            self._move_linear(delta, vl)
-        elif c == 'G1':  # linear interpolation
-            self._move_linear(delta, velocity)
-        elif c == 'G2':  # circular interpolation, clockwise
-            self._move_circular(delta, radius, velocity, CW)
-        elif c == 'G3':  # circular interpolation, counterclockwise
-            self._move_circular(delta, radius, velocity, CCW)
+        if c == 'G0' or c == 'G1':  # rapid move
+            if self._absoluteCoordinates:
+                self.hal.move_to(gcode.coordinates(), self._velocity)
+            else:
+                self.hal.move(gcode.coordinates(), self._velocity)
+        # elif c == 'G1':  # linear interpolation
+        # elif c == 'G2':  # circular interpolation, clockwise
+            # self._move_circular(delta, radius, velocity, CW)
+        # elif c == 'G3':  # circular interpolation, counterclockwise
+            # self._move_circular(delta, radius, velocity, CCW)
         elif c == 'G4':  # delay in s
             if not gcode.has('P'):
                 raise GMachineException("P is not specified")
@@ -367,7 +339,7 @@ class GMachine(object):
             if pause < 0:
                 raise GMachineException("bad delay")
             self.hal.join()
-            time.sleep(pause)
+            time.sleep(pause/1000)
         elif c == 'G17':  # XY plane select
             self._plane = PLANE_XY
         elif c == 'G18':  # ZX plane select
@@ -413,10 +385,17 @@ class GMachine(object):
             self._spindle(0)
         elif c == 'M2' or c == 'M30':  # program finish, reset everything.
             self.reset()
+        elif c == 'M42':
+            port =  gcode.get('P')
+            state = gcode.get('S')
+            # if port ==
         elif c == 'M84':  # disable motors
             self.hal.disable_steppers()
+        elif c == 'M20':
+            answer = '\nBegin file list\n/ex.gcode 123\nEnd file list\nok'
+            # answer = '\n"/1.g"\nok\n'
         elif c == 'M21':  # init SD
-            pass
+            answer = 'ok SD card ok'
         # extruder and bed heaters control
         elif c == 'M104' or c == 'M109' or c == 'M140' or c == 'M190':
             if c == 'M104' or c == 'M109':
@@ -435,17 +414,19 @@ class GMachine(object):
                 raise GMachineException("bad temperature")
             self._heat(heater, t, wait)
         elif c == 'M105':  # get temperature
+            answer = "ok "
             try:
                 et = self.hal.get_extruder_temperature()
-            except (IOError, OSError):
+                answer += "T:{}".format(et)
+            except (self.hal.HalException):
                 et = None
             try:
                 bt = self.hal.get_bed_temperature()
-            except (IOError, OSError):
+                answer += " B:{}".format(bt)
+            except (self.hal.HalException):
                 bt = None
             if et is None and bt is None:
                 raise GMachineException("can not measure temperature")
-            answer = "T:{} B:{}".format(et, bt)
         elif c == 'M106':  # fan control
             if gcode.get('S', 1) != 0:
                 self._fan(True)
@@ -458,11 +439,16 @@ class GMachine(object):
         elif c == 'M111':  # enable debug
             logger.setLevel(logging.DEBUG)
         elif c == 'M114':  # get current position
-            self.hal.join()
+            # self.hal.join()
             p = self.position()
-            answer = "X:{} Y:{} Z:{} E:{}".format(p.x, p.y, p.z, p.e)
-        elif c == 'M115':  # get current position
-            pass
+            answer = "ok X:{} Y:{} Z:{} E:{}".format(p.x, p.y, p.z, p.e)
+        elif c == 'M115':  # get current fw version
+            fw_ver = self.hal.get_fw_version()
+            answer = "ok FIRMWARE_VERSION:{}".format(fw_ver)
+        elif c == 'M220':  # get current fw version
+            self.hal.set_feedrate_factor(gcode.get('S', 100)/100.)
+        elif c == 'M221':  # get current fw version
+            self.hal.set_extruder_factor(gcode.get('S', 100)/100.)
 
         elif c is None:  # command not specified(ie just F was passed)
             pass
@@ -474,8 +460,8 @@ class GMachine(object):
             if self._absoluteCoordinates:
                 raise GMachineException("Not supported, use G90/G91")
         else:
-            raise GMachineException("unknown command: {}".format(c))
+            # raise GMachineException("unknown command: {}".format(c))
+            logger.error("unknown command: {}".format(c))
         # save parameters on success
-        self._velocity = velocity
-        logger.debug("position {}".format(self._position))
+        # logger.debug("position {}".format(self._position))
         return answer

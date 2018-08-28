@@ -13,7 +13,7 @@ pyUP3D_com_module = Extension('pyUP3D_com',
                     extra_compile_args=['-std=c99'])
 
 setup(name='pyUP3D',
-    version='0.1.7',
+    version='0.1.9',
     py_modules=['pyup3d'],
     # install_requires=['libusb'],
     description='UP3D USB Control module written in C',

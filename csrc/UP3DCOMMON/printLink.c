@@ -24,7 +24,7 @@ bool GetPrinterResponse(uint8_t *apCmd, uint8_t *apRespBuff, int aCmdLen, int *a
   uint8_t resp[2048];
   int respBuffLen = 0;
   volatile int written = UP3DCOMM_Write( apCmd, aCmdLen);
-  PDEBUG("GetPrinterResponse:write(%X): write %x; %X\n", *apCmd, aCmdLen, written);
+  // PDEBUG("GetPrinterResponse:write(%X): write %x; %X\n", *apCmd, aCmdLen, written);
   if (apRespBuffLen)
   {
     respBuffLen = *apRespBuffLen;
@@ -103,6 +103,8 @@ bool MotorJog(uint8_t motor, float offset, float speed)
   float *p2 = (float*)&CMD_JOG[2+4];
   int read, i;
 
+  if (motor > E_axis)
+    return false;
   *pCmd = 0x6A;
   *pMotor = motor;
   *p1 = speed;
@@ -129,10 +131,12 @@ bool MotorJogTo(uint8_t motor, float coord, float speed)
   int read, i;
 
   PDEBUG("MotorJogTo(%u, %f, %f)\n", motor, coord, speed);
+  if (motor > E_axis)
+    return false;
   *pCmd = 0x4A;
   *pMotor = motor;
-  *p1 = coord;
-  *p2 = speed;
+  *p1 = speed;
+  *p2 = coord;
   return GetPrinterResponse(CMD_JOG, 0L, sizeof(CMD_JOG), &read);
 }
 
@@ -308,12 +312,6 @@ bool ExtrudeMaterial(int extruder, int temperature)
   return LoadRunRomProg(program);
 }
 
-bool InitialPrinter(void)
-{
-  SetSystemVar(16, 0);
-  return LoadRunRomProg(0);
-}
-
 bool UpExtrudeMaterial(bool WithdrawMaterial)
 {
   SYSTEM_STATE status;
@@ -333,6 +331,12 @@ bool UpExtrudeMaterial(bool WithdrawMaterial)
     PWARN("");
     return false;
   }
+}
+
+bool InitialPrinter(void)
+{
+  SetSystemVar(16, 0);
+  return LoadRunRomProg(0);
 }
 
 bool LoadRomProg(char prog, uint32_t* ret)

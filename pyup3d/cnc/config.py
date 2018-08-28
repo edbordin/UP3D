@@ -2,7 +2,7 @@
 # # Hardware config.
 #
 # # Maximum velocity for each axis in millimeter per minute.
-MAX_VELOCITY_MM_PER_MIN_X = 24000 # ???
+MAX_VELOCITY_MM_PER_MIN_X = 12000 # ???
 MAX_VELOCITY_MM_PER_MIN_Y = 12000 # ???
 MAX_VELOCITY_MM_PER_MIN_Z = 600 # ???
 MAX_VELOCITY_MM_PER_MIN_E = 1500 # ???

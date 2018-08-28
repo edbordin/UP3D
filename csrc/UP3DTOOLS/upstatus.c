@@ -97,22 +97,70 @@ bool UpPauseProgram()
 }
 
 
+float steps[4]; // steps per mm for each axis from printer info
+
+static bool up3d_updateData()
+{
+    TT_tagPrinterInfoHeader pihdr;
+    TT_tagPrinterInfoName   piname;
+    TT_tagPrinterInfoData   pidata;
+    TT_tagPrinterInfoSet    pisets[8];
+    if( !UP3D_GetPrinterInfo( &pihdr, &piname, &pidata, pisets ) )
+    {
+        printf( "UP printer info error\n" );
+        UP3D_Close();
+        return false;
+    }
+
+    steps[0] = pidata.f_steps_mm_x;
+    steps[1] = pidata.f_steps_mm_y;
+    steps[2] = pidata.f_steps_mm_z;
+    steps[3] = pidata.f_steps_mm_x == 160.0 ? 236.0 : 854.0; // fix display for Cetus3D
+
+
+    printf("PrinterId: %u\n", pihdr.u32_printerid);
+    // logDebug("HwVersion: %u\n", pihdr.u32_hw_version);
+    printf("RomVersion: %f\n", pihdr.f_rom_version);
+    printf("serialNum: %u\n", pihdr.u32_printerserial);
+    printf("nozzletype: %u\n", pihdr.u32_unk7);
+    printf("printerName: %.63s\n", piname.printer_name);
+    // for (int i = 0; i < 8; i++)
+    // {
+    //     printf("setName%i: %.16s\n", i, pisets[i].set_name);
+    //     printf("nozzleDiam: %f\n", pisets[i].nozzle_diameter);
+    // }
+
+    UP3D_SetParameter(0x94,999); //set best accuracy for reporting position
+    return true;
+}
+
+void print_motors_pos()
+{
+  for (int axis = 1; axis < 5; ++axis)
+  {
+    int32_t apos = UP3D_GetAxisPosition(axis);
+    float pos = (float)apos / steps[axis-1];
+    printf("Motor%u: %7.3f == %i\n", axis, pos, apos);
+  }
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
-  if (argc > 2)
-    print_usage_and_exit(argv[0]);
+  // if (argc > 2)
+  //   print_usage_and_exit(argv[0]);
 
   if( !UP3D_Open() )
     return -1;
+
+  up3d_updateData();
 
   if (UP3D_IsPrinterResponsive())
   {
 
   }
 
-  if (argc == 2)
+  if (argc >= 2)
   {
     if ( !strcmp(argv[1], "stop") )
     {
@@ -162,15 +210,34 @@ int main(int argc, char *argv[])
     else if ( !strcmp(argv[1], "move") )
     {
       //UP3D_ClearProgramBuf();
-      MotorJog(2, 40.0, 10.0);
-      // MotorJogTo(2, 15.0, -22.0);
-
-      //UP3D_StartResumeProgram();
+      if (argc > 4)
+      {
+        int axis = atoi(argv[2]) - 1;
+        float offset = atof(argv[3]);
+        float speed = atof(argv[4]);
+        MotorJog(axis, offset, speed);
+      }
+      else
+      {
+        printf("move i8_axis f_offset f_speed\n");
+      }
+    }
+    else if ( !strcmp(argv[1], "moveto") )
+    {
+      if (argc > 4)
+      {
+        int axis = atoi(argv[2]) - 1;
+        float coord = atof(argv[3]);
+        float speed = atof(argv[4]);
+        MotorJogTo(axis, coord, speed);
+      }
+      else
+      {
+        printf("moveto i8_axis f_coord f_speed\n");
+      }
     }
     else if ( !strcmp(argv[1], "pause") )
     {
-      // PauseProgram();
-      // MotorJogTo(2, 15.0, -22.0);
       UpPauseProgram();
     }
     else if ( !strcmp(argv[1], "resume") )
@@ -179,12 +246,10 @@ int main(int argc, char *argv[])
     }
     else if ( !strcmp(argv[1], "extrude") )
     {
-      // MotorJog(E_axis, 1200.0, 40.0);
       UpExtrudeMaterial(true);
     }
     else if ( !strcmp(argv[1], "init") )
     {
-      // MotorJog(E_axis, 1200.0, 40.0);
       InitialPrinter();
     }
     else
@@ -204,7 +269,8 @@ int main(int argc, char *argv[])
   int32_t tr = UP3D_GetTimeRemaining();
 
 
-  printf("%s;%s;%s;%0.2f;%d;%0.2f;%d;%d\n",
+  print_motors_pos();
+  printf("\n%s;%s;%s;%0.2f;%d;%0.2f;%d;%d\n",
          UP3D_STR_MACHINE_STATE[mstat],
          UP3D_STR_PROGRAM_STATE[pstat],
          UP3D_STR_SYSTEM_STATE[sstat],

@@ -41,12 +41,12 @@ static char UP3D_STR_AXIS_STATE[][32]    = {"No Error","+Limit Error","-Limit Er
 typedef enum UP3D_PROG_CMD {
 //UP3DPCMD_0 ?
   UP3DPCMD_Stop         = 0x00000001,
-  UP3DPCMD_SetState     = 0x00000002,  
+  UP3DPCMD_SetState     = 0x00000002,
   UP3DPCMD_MoveF        = 0x00000003,  //JOGCMD       Speed,Pos,Speed,Pos
   UP3DPCMD_MoveL        = 0x00000004,  //MOVECMD      SegNum,SegPeriod,XSpeed,YSpeed,ASpeed,XAcc,YAcc,AAcc
   UP3DPCMD_Pause        = 0x00000005,  //WAITCMD      Var, Val, Mode
   UP3DPCMD_SetParameter = 0x00000006,  //SYSVARCMD    Var, Val
-  UP3DPCMD_WaitIfNot    = 0x00000007,  
+  UP3DPCMD_WaitIfNot    = 0x00000007,
   UP3DPCMD_HomeAxis     = 0x00000008,  //HOMECMD      MotorID, HSpeed, HOffDis
   UP3DPCMD_IfNotThenJmp = 0x00000009,  //IFCMD        Var, Val, Mode, Jumpline
 //UP3DPCMD_A Change Nozzle ?? (1x LONG 0x05/0x0C/0x0D)
@@ -56,19 +56,19 @@ typedef enum UP3D_PROG_CMD {
   //COPYRIGHTCMD DwellTime,SerialID,LicenseCount(8),bCountDown(8),CmdVerify1(8),CmdVerify2(8)
   //MATERIALCMD  DwellTime,UsedMaterial,CartridgeID,Type(8),CmdVerify1(8),CmdVerify2(8)
   //FLASHVARCMD  type(8),var(8),res1(8),res2(8),val,jumpline
-  
+
 } UP3D_PROG_CMD;
 
 typedef enum UP3D_PROG_CMD_SETSTATE_STATE {
   UP3DPCMD_SetState_StatePower       = 0x00,
   UP3DPCMD_SetState_StateBeeper      = 0x04,
-//UP3DPCMD_SetState_StateUnk_Tester  = 0x0A, //(TEST / FORMAT SD CARD?) 
+//UP3DPCMD_SetState_StateUnk_Tester  = 0x0A, //(TEST / FORMAT SD CARD?)
 } UP3D_PROG_CMD_SETSTATE;
 
 typedef enum UP3D_PROG_CMD_SETSTATE_VALUE {
   UP3DPCMD_SetState_ValueOff         = 0x00,
   UP3DPCMD_SetState_ValueOn          = 0x01,
-//UP3DPCMD_SetState_ValueUnk         = 0x02, //(TEST / FORMAT SD CARD?) 
+//UP3DPCMD_SetState_ValueUnk         = 0x02, //(TEST / FORMAT SD CARD?)
 } UP3D_PROG_CMD_SETSTATE_VALUE;
 
 typedef enum UP3D_AXIS {
@@ -114,7 +114,7 @@ typedef struct TT_tagPrinterInfoHeader {
   float    flt_unk1;              //1.0                       (info version)
   uint32_t u32_printerid;         //00002777 => UP Mini(M)    (system type)
   uint32_t u32_unk3;              //1                         (nozzle num)
-  uint32_t u32_unk4;              //102                       (hardware ver)
+  uint32_t u32_hw_version;        //102                       (hardware ver)
   float    f_rom_version;         //6.1                       (software ver)
   uint32_t u32_printerserial;     //208460                    (system sn)
   uint32_t u32_unk7;              //100                       (nozzle type)
@@ -242,7 +242,7 @@ typedef enum PARA {
   PARA_x0D                 = 0x0D, //stop  program
   PARA_x0E                 = 0x0E, //init  program
   PARA_x0F                 = 0x0F, //SYSTEM INTERNAL STATUS: 0=NO_ERROR, 1=STOP_AT_LIMIT, 2=PROGRAM_STOP, 3=OVER_TIME, 4=UNKNOWN_CMD, 5=SINGLE_JOG_CMD, 6=WAIT_PROG_CMD
-  
+
   PARA_PRINT_STATUS        = 0x10, //STATUS  0=PRINTER ERROR/NOT PRINTING, 1=PREAPRED FOR PRINTING, 2=PRINTING, 3=PAUSED, ...
   PARA_x11                 = 0x11, // 0/1 HAVE SUPPORT / NO SUPPORT ??AFTER EVERY LAYER
 
@@ -263,7 +263,7 @@ typedef enum PARA {
   PARA_x1C                 = 0x1C, //PRINTING: 0=Not Printing, 1=Printing
 
   PARA_x1D                 = 0x1D, //Feed Error Length: %d
-  
+
   PARA_x1E                 = 0x1E, //X: 0=X No Error,1=X+ Limit Error, 2=X- Limit Error
   PARA_x1F                 = 0x1F, //Y: 0=Y No Error,1=Y+ Limit Error, 2=Y- Limit Error
   PARA_x20                 = 0x20, //Z: 0=Z No Error,1=Z+ Limit Error, 2=Z- Limit Error
@@ -313,14 +313,14 @@ typedef enum PARA {
 //0x41 ?? 267
 //0x42 ?? 242
 //0x43 ?? 104
-//0x46 ?? 13 
+//0x46 ?? 13
 //0x49 ?? 80
 
 //0x4B ?? (default: 0x1312D00 = 20000000 / 50000000) ? timer base for stepper calculation MHZ of CPU in printer ?
 
   PARA_REPORT_PERCENT      = 0x4C,
   PARA_REPORT_TIME_REMAIN  = 0x4D,
-  
+
 //0x54: UP: "SupportNozzleUpDown" (0x03E8B258 / 0x0000B258)
 
 
@@ -332,7 +332,7 @@ typedef enum PARA {
   PARA_RED_BLUE_BLINK      = 0x8E, // RED/BLUE led -1=blue, 0=red, 1=purple, 2-... = blink speed
 
 //0x94: UP:"SetZPrecision" (0/999)
-// ACCURACY FOR REPORTING AXIS POSITION 999 = best 
+// ACCURACY FOR REPORTING AXIS POSITION 999 = best
 //0x94 ?? 0x03e7 / 0x63 ==> 999, 99 ... 0
 
   //0xB1 FRONT BUTTON STATE  0=DEPRESSED / !0=PRESSED

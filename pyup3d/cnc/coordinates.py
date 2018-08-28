@@ -11,10 +11,10 @@ class Coordinates(object):
         :param y: y coordinated.
         :param z: z coordinated.
         """
-        self.x = round(x, 10)
-        self.y = round(y, 10)
-        self.z = round(z, 10)
-        self.e = round(e, 10)
+        self.x = round(x, 10) if x is not None else None
+        self.y = round(y, 10) if y is not None else None
+        self.z = round(z, 10) if z is not None else None
+        self.e = round(e, 10) if e is not None else None
 
     def is_zero(self):
         """ Check if all coordinates are zero.

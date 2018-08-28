@@ -68,7 +68,7 @@ class PARA():
     #0x2B  193  | *0.001 ==> 0.193   #Jump Time: %d
     #0x2C                            #Using Nozzle: %d
 
-    #0x2D                            #Target Temp 1: %f  (automatic taken after set temp)
+    PARA_GET_TARGET_TEMP_1   = 0x2D                            #Target Temp 1: %f  (automatic taken after set temp)
     #0x2E                            #Target Temp 2: %f  (automatic taken after set temp)
     #0x2F                            #Target Temp 3: %f  (automatic taken after set temp)
     #0x30                            #Target Temp 4: %f  (automatic taken after set temp)
@@ -125,3 +125,9 @@ class PARA():
 
     #0xC9, used as counter
     #  UP3D_SetParameter(0x94,999); //set best accuracy for reporting position
+
+class AXIS:
+    X_axis = 1
+    Y_axis = 2
+    Z_axis = 3
+    E_axis = 4
