@@ -1,3 +1,11 @@
+# THIS IS WORK IN PROGRESS! 
+
+# README UPDATE IS COMMING SOON
+
+
+------------------------
+
+
 # UP3D - use your UP printer with standard G-Code Slicers 
 [![License](http://img.shields.io/:license-gpl2-blue.svg?style=flat-square)](http://www.gnu.org/licenses/gpl-2.0.html)
 [![Build Status](https://travis-ci.org/UP3D-gcode/UP3D.svg?branch=master)](https://travis-ci.org/UP3D-gcode/UP3D) 
