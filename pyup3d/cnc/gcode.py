@@ -42,7 +42,8 @@ class GCode(object):
         :param multiply: if value exist, multiply it by this value.
         :return: Value if exists or default otherwise.
         """
-        return float(self.params.get(arg_name, default)) * multiply
+        ret = (self.params.get(arg_name, default))
+        return None if ret is None else float(ret) * multiply
 
     def coordinates(self, default = DEFAULT_NONE_COORDS, multiply = 1):
         """ Get X, Y and Z values as Coord object.
@@ -99,23 +100,24 @@ class GCode(object):
         # line = line.upper().strip()
         line = line.strip()
         line = re.sub(clean_pattern, '', line)
-        print("clean line: " + line)
+        # print("clean line: " + line)
         if len(line) == 0:
             return None
         if line[0] == '%':
             return None
         m = g_pattern.findall(line)
         additional = re.sub(g_pattern, '', line)
-        print("found: ")
-        print(m)
-        print("addit:" + additional)
+        # print("found: ")
+        # print(m)
+        # print("addit:" + additional)
         if not m:
             raise GCodeException('gcode not found: {}'.format(line))
         # if len(''.join(["%s%s" % i for i in m])) != len(line):
         #     raise GCodeException('extra characters in line {}'.format(m))
         # noinspection PyTypeChecker
         params = dict(m)
-        params['extra'] = additional
+        if len(additional):
+            params['extra'] = additional
         # if len(params) != len(m):
         #     raise GCodeException('duplicated gcode entries: {}'.format(line))
         if 'G' in params and 'M' in params:

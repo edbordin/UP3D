@@ -3,6 +3,7 @@ from pyup3d.cnc.coordinates import *
 from pyup3d.cnc.enums import *
 from pyup3d.cnc.config import *
 from pyup3d.cnc.hal import Hal
+from pyup3d.cnc.sd_commands.sd_file_cmd import SdCard
 import time
 
 import logging
@@ -22,7 +23,7 @@ class GMachine(object):
     """
     AUTO_FAN_ON = AUTO_FAN_ON
 
-    def __init__(self, hal):
+    def __init__(self, sd:SdCard):
         """ Initialization.
         """
         self._position = Coordinates(0.0, 0.0, 0.0, 0.0)
@@ -38,6 +39,7 @@ class GMachine(object):
         self.reset()
         self.hal = Hal()
         self.hal.init()
+        self.sd = sd
         self._feedrate = MIN_VELOCITY_MM_PER_MIN
 
     def release(self):
@@ -392,10 +394,12 @@ class GMachine(object):
         elif c == 'M84':  # disable motors
             self.hal.disable_steppers()
         elif c == 'M20':
-            answer = '\nBegin file list\n/ex.gcode 123\nEnd file list\nok'
+            answer = self.sd.list()
             # answer = '\n"/1.g"\nok\n'
         elif c == 'M21':  # init SD
-            answer = 'ok SD card ok'
+            answer = self.sd.init()
+        elif c == 'M27':  # init SD
+            answer = 'ok\r\nSD printing byte {}/100 '.format(self.hal.get_job_percent())
         # extruder and bed heaters control
         elif c == 'M104' or c == 'M109' or c == 'M140' or c == 'M190':
             if c == 'M104' or c == 'M109':
@@ -427,6 +431,7 @@ class GMachine(object):
                 bt = None
             if et is None and bt is None:
                 raise GMachineException("can not measure temperature")
+            # answer += "\r\nok SD printing byte 2/100"
         elif c == 'M106':  # fan control
             if gcode.get('S', 1) != 0:
                 self._fan(True)
@@ -444,7 +449,8 @@ class GMachine(object):
             answer = "ok X:{} Y:{} Z:{} E:{}".format(p.x, p.y, p.z, p.e)
         elif c == 'M115':  # get current fw version
             fw_ver = self.hal.get_fw_version()
-            answer = "ok FIRMWARE_VERSION:{}".format(fw_ver)
+            answer = "ok FIRMWARE_NAME:Marlin PROTOCOL_VERSION:1.0 FIRMWARE_VERSION:{}".format(fw_ver)
+            # "FIRMWARE_VERSION:{}\r\ncap:AUTOREPORT_SD_STATUS:1".format(fw_ver)
         elif c == 'M220':  # get current fw version
             self.hal.set_feedrate_factor(gcode.get('S', 100)/100.)
         elif c == 'M221':  # get current fw version
@@ -465,3 +471,17 @@ class GMachine(object):
         # save parameters on success
         # logger.debug("position {}".format(self._position))
         return answer
+
+
+    def g0(self, gcode):
+        pass
+
+    def init_commands(self):
+        self.commands = {
+            'G0': self.g0,
+        }
+
+    def do_command_new(self, gcode):
+        command = self.commands[gcode.command()]
+
+        return command(gcode)

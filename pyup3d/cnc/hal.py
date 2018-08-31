@@ -75,7 +75,7 @@ class Hal():
                 ftemp *= target_temp
 
             return ftemp
-        except ValueError as e:
+        except Exception as e:
             logger.error("get_extruder_temp: {}.. rawTemp {}".format(e, temp))
             raise Hal.HalException(e)
 
@@ -172,3 +172,6 @@ class Hal():
         z = -1.0 * upcom.get_axis_pos(AXIS.Z_axis)
         e = upcom.get_axis_pos(AXIS.E_axis)
         return Coordinates(x,y,z,e)
+
+    def get_job_percent(self):
+        return upcom.getParam(PARA.PARA_REPORT_PERCENT)
