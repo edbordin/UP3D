@@ -5,12 +5,13 @@ from pyup3d.uphandle import UP
 from pyup3d.cnc.coordinates import Coordinates
 from time import sleep
 import pyUP3D_com as upcom
-from pyup3d.lib.up3d_params import PARA, USB_Params as USB, AXIS
+from pyup3d.lib.up3d_params import *
 import pyup3d.lib.format_helper as fh
 import logging
 
 logger = logging.getLogger('hal')
 logger.setLevel(logging.DEBUG)
+
 
 
 class Hal():
@@ -28,6 +29,7 @@ class Hal():
         self.printer = UP()
         self.extruder_factor = 1.0
         self.feedrate_factor = 1.0
+        self.check_temp_extruder = True
 
 
     def spindle_control(self, percent):
@@ -92,7 +94,11 @@ class Hal():
         """ Disable all steppers until any movement occurs.
         """
         logging.info("hal disable steppers")
+        return upcom.powerOff()
 
+    def enable_steppers(self):
+        logging.info("hal enable steppers")
+        return upcom.powerOn()
 
     def calibrate(self, x, y, z):
         """ Move head to home position till end stop switch will be triggered.
@@ -120,6 +126,8 @@ class Hal():
         if coordinates.z is not None:
             func(AXIS.Z_axis, -1. * coordinates.z, feedrate * self.feedrate_factor)
         if coordinates.e is not None:
+            if self.check_temp_extruder and not self.reached_target_temp():
+                raise Hal.HalException('Target Temperatuer is not reached')
             # 22.7 found by experimenting
             func(AXIS.E_axis, coordinates.e * 22.7, feedrate * 10 * self.extruder_factor)
 
@@ -151,17 +159,8 @@ class Hal():
             sleep(1)
 
 
-
-    def deinit(self):
-        """ De-initialise.
-        """
-        logging.info("hal deinit()")
-
-
-    def watchdog_feed(self):
-        """ Feed hardware watchdog.
-        """
-        pass
+    def reached_target_temp(self):
+        return upcom.getSystemVar(0x12)
 
     def get_fw_version(self):
         return upcom.get_fw_version()
@@ -175,3 +174,43 @@ class Hal():
 
     def get_job_percent(self):
         return upcom.getParam(PARA.PARA_REPORT_PERCENT)
+
+    def pause(self):
+        return upcom.pausePrint()
+
+    def resume(self):
+        return upcom.resumePrint()
+
+    def get_machine_state(self) -> MachineState:
+        state = upcom.getParam(0x00)
+        if state > MachineState.unknown_status:
+            return MachineState.unknown_status
+        return MachineState(state)
+
+    def get_program_state(self) -> ProgramState:
+        state = upcom.getParam(0x01)
+        if state > ProgramState.have_errors:
+            return ProgramState.have_errors
+        return ProgramState(state)
+
+    def get_system_state(self) -> SystemState:
+        state = upcom.getParam(0x10)
+        if state > SystemState.unknown_error:
+            return SystemState.unknown_error
+        return SystemState(state)
+
+    def isPrinting(self):
+        state = self.get_system_state()
+        return (state == SystemState.running)
+
+    def stopAllMove(self):
+        return upcom.stopAllMove()
+
+    def set_hotend_temp(self, temp):
+        raise Hal.HalException('not implemented')
+
+    def set_bed_temp(self, temp):
+        raise Hal.HalException('not implemented')
+
+    def set_fan_speed(self, speed):
+        raise Hal.HalException('not implemented')

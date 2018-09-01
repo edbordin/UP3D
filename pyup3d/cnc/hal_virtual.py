@@ -6,14 +6,32 @@ from pyup3d.cnc.config import *
 """ This is virtual device class which is very useful for debugging.
     It checks PulseGenerator with some tests.
 """
+from pyup3d.cnc.config import *
+from pyup3d.cnc.coordinates import Coordinates
+from pyup3d.lib.up3d_params import *
+import logging
+
+logger = logging.getLogger('hal')
+logger.setLevel(logging.DEBUG)
+
+
 
 class Hal():
+
+    class HalException(Exception):
+        """ Exceptions while processing gcode line.
+        """
+        pass
 
     def init(self):
         """ Initialize GPIO pins and machine itself.
         """
         logging.info("initialize hal")
         self.extruderTemp = EXTRUDER_MAX_TEMPERATURE *0.999
+        self.extruder_factor = 1.0
+        self.feedrate_factor = 1.0
+        self.check_temp_extruder = True
+        self.job_percent = 0
 
 
     def spindle_control(self, percent):
@@ -53,15 +71,15 @@ class Hal():
         """ Measure extruder temperature.
         :return: temperature in Celsius.
         """
-        self.extruderTemp -= 10.
-        return self.extruderTemp
+        return 20.0
 
 
     def get_bed_temperature(self):
         """ Measure bed temperature.
         :return: temperature in Celsius.
         """
-        return BED_MAX_TEMPERATURE * 0.999
+        return 20.0
+        # return BED_MAX_TEMPERATURE * 0.999
 
 
     def disable_steppers(self):
@@ -69,6 +87,8 @@ class Hal():
         """
         logging.info("hal disable steppers")
 
+    def enable_steppers(self):
+        logging.info("hal enable steppers")
 
     def calibrate(self, x, y, z):
         """ Move head to home position till end stop switch will be triggered.
@@ -81,126 +101,67 @@ class Hal():
         logging.info("hal calibrate, x={}, y={}, z={}".format(x, y, z))
         return True
 
+    def set_feedrate_factor(self, factor):
+        self.feedrate_factor = factor
 
-    # noinspection PyUnusedLocal
-    def move(self, generator):
-        """ Move head to specified position.
-        :param generator: PulseGenerator object.
-        """
-        delta = generator.delta()
-        ix = iy = iz = ie = 0
-        lx, ly, lz, le = None, None, None, None
-        dx, dy, dz, de = 0, 0, 0, 0
-        mx, my, mz, me = 0, 0, 0, 0
-        cx, cy, cz, ce = 0, 0, 0, 0
-        direction_x, direction_y, direction_z, direction_e = 1, 1, 1, 1
-        st = time.time()
-        direction_found = False
-        for direction, tx, ty, tz, te in generator:
-            if direction:
-                direction_found = True
-                direction_x, direction_y, direction_z, direction_e = tx, ty, tz, te
-                if STEPPER_INVERTED_X:
-                    direction_x = -direction_x
-                if STEPPER_INVERTED_Y:
-                    direction_y = -direction_y
-                if STEPPER_INVERTED_Z:
-                    direction_z = -direction_z
-                if STEPPER_INVERTED_E:
-                    direction_e = -direction_e
-                # if isinstance(generator, PulseGeneratorLinear):
-                #     assert ((direction_x < 0 and delta.x < 0)
-                #             or (direction_x > 0 and delta.x > 0) or delta.x == 0)
-                #     assert ((direction_y < 0 and delta.y < 0)
-                #             or (direction_y > 0 and delta.y > 0) or delta.y == 0)
-                #     assert ((direction_z < 0 and delta.z < 0)
-                #             or (direction_z > 0 and delta.z > 0) or delta.z == 0)
-                #     assert ((direction_e < 0 and delta.e < 0)
-                #             or (direction_e > 0 and delta.e > 0) or delta.e == 0)
-                continue
-            if tx is not None:
-                if tx > mx:
-                    mx = tx
-                tx = int(round(tx * 1000000))
-                ix += direction_x
-                cx += 1
-                if lx is not None:
-                    dx = tx - lx
-                    assert dx > 0, "negative or zero time delta detected for x"
-                lx = tx
-            else:
-                dx = None
-            if ty is not None:
-                if ty > my:
-                    my = ty
-                ty = int(round(ty * 1000000))
-                iy += direction_y
-                cy += 1
-                if ly is not None:
-                    dy = ty - ly
-                    assert dy > 0, "negative or zero time delta detected for y"
-                ly = ty
-            else:
-                dy = None
-            if tz is not None:
-                if tz > mz:
-                    mz = tz
-                tz = int(round(tz * 1000000))
-                iz += direction_z
-                cz += 1
-                if lz is not None:
-                    dz = tz - lz
-                    assert dz > 0, "negative or zero time delta detected for z"
-                lz = tz
-            else:
-                dz = None
-            if te is not None:
-                if te > me:
-                    me = te
-                te = int(round(te * 1000000))
-                ie += direction_e
-                ce += 1
-                if le is not None:
-                    de = te - le
-                    assert de > 0, "negative or zero time delta detected for e"
-                le = te
-            else:
-                de = None
-            # very verbose, uncomment on demand
-            # logging.debug("Iteration {} is {} {} {} {}".
-            #               format(max(ix, iy, iz, ie), tx, ty, tz, te))
-            f = list(x for x in (tx, ty, tz, te) if x is not None)
-            assert f.count(f[0]) == len(f), "fast forwarded pulse detected"
-        pt = time.time()
-        assert direction_found, "direction not found"
-        assert round(ix / STEPPER_PULSES_PER_MM_X, 10) == delta.x,\
-            "x wrong number of pulses"
-        assert round(iy / STEPPER_PULSES_PER_MM_Y, 10) == delta.y,\
-            "y wrong number of pulses"
-        assert round(iz / STEPPER_PULSES_PER_MM_Z, 10) == delta.z, \
-            "z wrong number of pulses"
-        assert round(ie / STEPPER_PULSES_PER_MM_E, 10) == delta.e, \
-            "e wrong number of pulses"
-        assert max(mx, my, mz, me) <= generator.total_time_s(), \
-            "interpolation time or pulses wrong"
-        logging.debug("Moved {}, {}, {}, {} iterations".format(ix, iy, iz, ie))
-        logging.info("prepared in " + str(round(pt - st, 2)) + "s, estimated "
-                     + str(round(generator.total_time_s(), 2)) + "s")
+    def set_extruder_factor(self, factor):
+        self.extruder_factor = factor
 
+
+    def move(self, coordinates, feedrate):
+        return True
+
+
+    def move_to(self, coordinates, feedrate):
+        return True
 
     def join(self):
-        """ Wait till motors work.
-        """
-        logging.info("hal join()")
+        return True
 
 
-    def deinit(self):
-        """ De-initialise.
-        """
-        logging.info("hal deinit()")
+    def reached_target_temp(self):
+        return False
 
+    def get_fw_version(self):
+        return 0
 
-    def watchdog_feed(self):
-        """ Feed hardware watchdog.
-        """
-        pass
+    def get_position(self):
+        return Coordinates(0,0,0,0)
+
+    def get_job_percent(self):
+        self.job_percent += 10
+        ret = self.job_percent
+        if ret >= 100:
+            self.job_percent = 0
+        return ret
+
+    def pause(self):
+        return True
+
+    def resume(self):
+        return True
+
+    def get_machine_state(self) -> MachineState:
+        return MachineState.unknown_status
+
+    def get_program_state(self) -> ProgramState:
+        return ProgramState.have_errors
+
+    def get_system_state(self) -> SystemState:
+        return SystemState.unknown_error
+
+    def isPrinting(self):
+        return False
+
+    def stopAllMove(self):
+        return True
+
+    def set_hotend_temp(self, temp):
+        return True
+
+    def set_bed_temp(self, temp):
+        return True
+
+    def set_fan_speed(self, speed):
+        return True
+

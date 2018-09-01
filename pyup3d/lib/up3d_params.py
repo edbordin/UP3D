@@ -1,3 +1,4 @@
+from enum import IntEnum
 
 class USB_Params():
     VID  = (0x4745)
@@ -131,3 +132,44 @@ class AXIS:
     Y_axis = 2
     Z_axis = 3
     E_axis = 4
+
+
+class MachineState(IntEnum):
+    system_error = 0
+    jogging = 1
+    running_program = 2
+    idle = 3
+    unknown_status=4
+
+class ProgramState(IntEnum):
+    stop = 0
+    running = 1
+    pause = 2
+    have_errors =3
+
+class SystemState(IntEnum):
+    unknown = 0
+    system_ready = 1
+    running = 2
+    paused = 3
+    nozzle_error = 5
+    motion_error = 6
+    print_finished = 7
+    user_canceled = 8
+    nozzle_to_hot = 9
+    nozzle_to_cool = 10
+    platform_to_hot = 11
+    dip_error = 12
+    sweep_error = 13
+    scan_error = 14
+    scan_calib_error = 15
+    system_power_on = 16
+    card_error = 17
+    sd_card_write_error = 18
+    sd_card_read_error = 19
+    save_to_sd_card = 20
+    jogcmd_error = 21
+    invalid_copyright = 22
+    over_usage_restriction = 23
+    unknown_error = 24
+

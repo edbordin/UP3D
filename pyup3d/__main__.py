@@ -3,6 +3,9 @@ from pyup3d.cnc.gcode import GCode, GCodeException
 from pyup3d.cnc.hal_virtual import Hal as HalVirtual
 from pyup3d.cnc.hal import Hal
 from pyup3d.uphandle import UP
+from pyup3d.cnc.sd_commands.sd_file_cmd import SdCard
+from pyup3d.cnc.gcode_commands import GCodeCommand
+
 
 import os, pty
 import logging
@@ -11,8 +14,11 @@ from time import sleep
 logger = logging.getLogger('up3d_main_')
 logger.setLevel(logging.DEBUG)
 up = UP()
-printer = Hal()
-machine = GMachine(printer)
+printer = HalVirtual()
+# printer = Hal()
+sd = SdCard(printer, '/home/maslovw/work/cetus3d/SD')
+gcodeExe = GCodeCommand(sd, printer)
+# machine = GMachine(printer)
 
 virtual_device = '/tmp/tty_up'
 
@@ -38,7 +44,8 @@ def do_line(line, virtual_fd):
     log_req(line)
     try:
         g = GCode.parse_line(line)
-        res = machine.do_command(g)
+        # res = machine.do_command(g)
+        res = gcodeExe.execute(g)
         if res is not None:
             ret = True, res#('ok ' + res)
         else:
@@ -62,7 +69,7 @@ def readline(descriptor):
         while True:
             line += ch.decode('utf-8')
             # print("ch >>",ch)
-            if (b'\n' == ch):
+            if (b'\n' == ch) or (0 == ch):
                 if (line.startswith('ok') or line.startswith('Error')):
                     return None
                 return line
@@ -73,7 +80,8 @@ def readline(descriptor):
     return None
 
 def open_virtual_device():
-    if up.isUsbConnected():
+    # if up.isUsbConnected():
+    if True:
         master, slave = pty.openpty()
         os.fchmod(slave, 438) # 0666 a+rw
         if os.path.islink(virtual_device):

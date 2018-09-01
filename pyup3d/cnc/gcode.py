@@ -21,11 +21,13 @@ class GCode(object):
     """ This object represent single line of gcode.
         Do not create it manually, use parse_line() instead.
     """
-    def __init__(self, params):
+    def __init__(self, params, line):
         """ Create object.
         :param params: dict with gcode key-values.
         """
         self.params = params
+        self.line = line
+
 
     def has(self, arg_name):
         """
@@ -44,6 +46,9 @@ class GCode(object):
         """
         ret = (self.params.get(arg_name, default))
         return None if ret is None else float(ret) * multiply
+
+    def getExtra(self):
+        return self.params.get('extra')
 
     def coordinates(self, default = DEFAULT_NONE_COORDS, multiply = 1):
         """ Get X, Y and Z values as Coord object.
@@ -92,14 +97,14 @@ class GCode(object):
         return None
 
     @staticmethod
-    def parse_line(line):
+    def parse_line(srcline):
         """ Parse line.
         :param line: String with gcode line.
         :return: gcode objects.
         """
         # line = line.upper().strip()
-        line = line.strip()
-        line = re.sub(clean_pattern, '', line)
+        srcline = srcline.strip()
+        line = re.sub(clean_pattern, '', srcline)
         # print("clean line: " + line)
         if len(line) == 0:
             return None
@@ -122,7 +127,7 @@ class GCode(object):
         #     raise GCodeException('duplicated gcode entries: {}'.format(line))
         if 'G' in params and 'M' in params:
             raise GCodeException('g and m command found: {}'.format(line))
-        return GCode(params)
+        return GCode(params, srcline)
 
 if __name__ == "__main__":
     line = "M28 /b.g"

@@ -8,6 +8,13 @@
 #include "printLink.h"
 
 
+#ifdef _WINDOWS
+#include <windows.h>
+#else
+#include <unistd.h>
+#define Sleep(x) usleep((x)*1000)
+#endif
+
 #define upl_error(s) { printf("ERROR: %s\n",s); }
 #define logDebug(...) printf (__VA_ARGS__)
 #define logWarning(...) printf (__VA_ARGS__)
@@ -90,6 +97,7 @@ static PyObject* up3d_init(PyObject *self, PyObject *args)
     return PyBool_FromLong(1L);
 }
 
+
 static PyObject* up3d_isIdle(PyObject *self, PyObject *args)
 {
     logDebug("up3d_isIdle\n");
@@ -101,6 +109,39 @@ static PyObject* up3d_isIdle(PyObject *self, PyObject *args)
     }
 
     return PyBool_FromLong(isIdle);
+}
+
+static PyObject* up3d_pause(PyObject *self, PyObject *args)
+{
+    logDebug("up3d_pause\n");
+    bool isIdle;
+    IsSystemIdle(&isIdle);
+    if (!PauseProgram())
+    {
+        logDebug("PauseProgram: fail\n");
+        return PyBool_FromLong(0L);
+    }
+    if (!UpWaitUntilIdle(500))
+    {
+        logDebug("UpWaitUntilIdle: fail\n");
+        return PyBool_FromLong(0L);
+    }
+    SetPrinterStatus(SS_PAUSED);
+    if (!StopAllMove())
+    {
+        logDebug("StopAllMove: fail\n");
+        return PyBool_FromLong(0L);
+    }
+    Sleep(1000);
+    logDebug("Pause done\n");
+    return PyBool_FromLong(1L);
+}
+
+static PyObject* up3d_resume(PyObject *self, PyObject *args)
+{
+    logDebug("up3d_resume\n");
+    const bool ret = StartResumeProgram();
+    return PyBool_FromLong(ret);
 }
 
 static PyObject* up3d_jog(PyObject *self, PyObject *args)
@@ -132,6 +173,14 @@ static PyObject* up3d_jogTo(PyObject *self, PyObject *args)
 
     axis -= 1;
     const bool ret = MotorJog(axis, coord, speed);
+    return PyBool_FromLong(ret);
+}
+
+static PyObject* up3d_stopAllMove(PyObject *self, PyObject *args)
+{
+    logDebug("up3d_stopAllMove\n", axis, offset, speed);
+
+    const bool ret = StopAllMove();
     return PyBool_FromLong(ret);
 }
 
@@ -181,6 +230,52 @@ static PyObject* up3d_getParameter(PyObject *self, PyObject *args)
     uint32_t res = UP3D_GetParameter(parameter & 0xFF);
     // return PyLong_AsUnsignedLong(res);
     return PyLong_FromLong(res);
+}
+
+static PyObject* up3d_getSystemVar(PyObject *self, PyObject *args)
+{
+    if (!UP3DCOMM_IsConnected())
+    {
+        PyErr_SetString(upError, "printer is not connected\n");
+        return NULL;
+    }
+    uint32_t var = 0x0B;
+    if (!PyArg_ParseTuple(args, "l", &var))
+    {
+        PyErr_SetString(upError, "wrong argument list, use: getSystemVar(var) -> int(value)");
+        return NULL;
+    }
+    int value;
+    bool res = GetSystemVar((char)(var & 0xFF), &value);
+    if (!res)
+    {
+        PyErr_SetString(upError, "printer didn't response");
+        return NULL;
+    }
+    return PyLong_FromLong(value);
+}
+
+static PyObject* up3d_setSystemVar(PyObject *self, PyObject *args)
+{
+    if (!UP3DCOMM_IsConnected())
+    {
+        PyErr_SetString(upError, "printer is not connected\n");
+        return NULL;
+    }
+    uint32_t var = 0x0B;
+    int value;
+    if (!PyArg_ParseTuple(args, "li", &var, &value))
+    {
+        PyErr_SetString(upError, "wrong argument list, use: setSystemVar(var, value)");
+        return NULL;
+    }
+    bool res = SetSystemVar((char)(var & 0xFF), value);
+    if (!res)
+    {
+        PyErr_SetString(upError, "printer didn't response");
+        return NULL;
+    }
+    return PyBool_FromLong(res);
 }
 
 static PyObject* up3d_beep(PyObject *self, PyObject *args)
@@ -279,12 +374,28 @@ static PyMethodDef up_methods[] = {
         "read a Parameter from the printer, see UP3D_PARAMS"
     },
     {
+        "getSystemVar", up3d_getSystemVar, METH_VARARGS,
+        "read System variable from the printer"
+    },
+    {
+        "setSystemVar", up3d_setSystemVar, METH_VARARGS,
+        "write System variable to the printer"
+    },
+    {
         "beep", up3d_beep, METH_NOARGS,
         "beep for 0.5sec"
     },
     {
         "init", up3d_init, METH_NOARGS,
         "initialize printer"
+    },
+    {
+        "pause", up3d_pause, METH_NOARGS,
+        "pause print"
+    },
+    {
+        "resume", up3d_resume, METH_NOARGS,
+        "resume print"
     },
     {
         "isIdle", up3d_isIdle, METH_NOARGS,
@@ -297,6 +408,10 @@ static PyMethodDef up_methods[] = {
     {
         "jog", up3d_jog, METH_VARARGS,
         "jog(axis, offset, speed). Move one of the axis to the offset of current pos"
+    },
+    {
+        "stopAllMove", up3d_stopAllMove, METH_NOARGS,
+        "stops all movement"
     },
     {NULL, NULL, 0, NULL}
 };
@@ -318,7 +433,7 @@ static struct PyModuleDef pyUP3D_definition = {
 // the name keyword argument in setup.py's setup() call.
 PyMODINIT_FUNC PyInit_pyUP3D_com(void) {
     Py_Initialize();
-    printf("v1.7");
+    printf("v1.8");
 
     PyObject *module = PyModule_Create(&pyUP3D_definition);
     upError = PyErr_NewException("up3d.error", NULL, NULL);
