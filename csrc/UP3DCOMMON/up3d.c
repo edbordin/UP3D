@@ -36,7 +36,10 @@ bool UP3D_IsPrinterResponsive()
 {
   static const uint8_t UP3D_CMD_1[] = { 0x01, 0x00 }; //GetFwVersion
   uint8_t resp[2048];
-  UP3DCOMM_Write( UP3D_CMD_1, sizeof(UP3D_CMD_1) ) != sizeof(UP3D_CMD_1);
+
+  if (UP3DCOMM_Write( UP3D_CMD_1, sizeof(UP3D_CMD_1) ) != sizeof(UP3D_CMD_1))
+    return false;
+
   int num_read = UP3DCOMM_Read( resp, sizeof(resp) );
   if (num_read > 0)
   {
