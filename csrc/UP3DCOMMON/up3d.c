@@ -52,7 +52,7 @@ bool UP3D_IsPrinterResponsive()
     {
       return false;
     }
-	  printf("FW version %u\n", _up3d_connected_fw_version);
+    printf("FW version %u\n", _up3d_connected_fw_version);
     return true;
   }
   return false;  
