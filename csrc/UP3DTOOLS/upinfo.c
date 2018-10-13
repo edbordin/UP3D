@@ -45,7 +45,7 @@ int main(int argc, char const *argv[])
   printf("Serial:%"PRIu32" ", pihdr.u32_printerserial);
   printf("ROM:%.4f ", pihdr.f_rom_version);
   printf("Model:%s ", piname.printer_name);
-  printf("U1:%.2f U3:%"PRIu32" U4:%"PRIu32" U7:%"PRIu32"",pihdr.flt_unk1,pihdr.u32_unk3,pihdr.u32_unk4,pihdr.u32_unk7 );
+  printf("U1:%.2f U3:%"PRIu32" U4:%"PRIu32" U7:%"PRIu32"",pihdr.flt_unk1,pihdr.u32_unk3,pihdr.u32_hw_version,pihdr.u32_unk7 );
   printf("\n");
   
   printf("Max-X:%f ", pidata.f_max_x);

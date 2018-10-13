@@ -178,7 +178,7 @@ static PyObject* up3d_jogTo(PyObject *self, PyObject *args)
 
 static PyObject* up3d_stopAllMove(PyObject *self, PyObject *args)
 {
-    logDebug("up3d_stopAllMove\n", axis, offset, speed);
+    // logDebug("up3d_stopAllMove\n", axis, offset, speed);
 
     const bool ret = StopAllMove();
     return PyBool_FromLong(ret);

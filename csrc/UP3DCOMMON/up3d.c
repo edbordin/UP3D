@@ -36,14 +36,26 @@ bool UP3D_IsPrinterResponsive()
 {
   static const uint8_t UP3D_CMD_1[] = { 0x01, 0x00 }; //GetFwVersion
   uint8_t resp[2048];
-  if( (UP3DCOMM_Write( UP3D_CMD_1, sizeof(UP3D_CMD_1) ) != sizeof(UP3D_CMD_1)) ||
-      (5 != UP3DCOMM_Read( resp, sizeof(resp) )) ||
-      (6 != resp[4]) )
-    return false;
-
-  _up3d_connected_fw_version = le32toh(*((uint32_t*)resp));
-  printf("FW version %u\n", _up3d_connected_fw_version);
-  return true;
+  UP3DCOMM_Write( UP3D_CMD_1, sizeof(UP3D_CMD_1) ) != sizeof(UP3D_CMD_1);
+  int num_read = UP3DCOMM_Read( resp, sizeof(resp) );
+  if (num_read > 0)
+  {
+    if (num_read == 2 && resp[1] == 6)
+    {
+      _up3d_connected_fw_version = resp[0];      
+    }
+    else if (num_read == 5 || resp[4] == 6 )
+    {
+	    _up3d_connected_fw_version = le32toh(*((uint32_t*)resp));
+    }
+    else 
+    {
+      return false;
+    }
+	  printf("FW version %u\n", _up3d_connected_fw_version);
+    return true;
+  }
+  return false;  
 }
 
 bool UP3D_ClearProgramBuf()
